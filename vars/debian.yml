@@ -1,0 +1,6 @@
+telegraf_distro_packages:
+   - telegraf
+   - gawk
+telegraf_package_state: latest
+
+influxdata_repo_baseurl: "{{ influxdb_repo_root }}/{{ ansible_distribution | lower }}"

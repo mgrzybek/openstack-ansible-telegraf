@@ -1,0 +1,12 @@
+# {{ ansible_managed }}
+
+[[inputs.net]]
+	## By default, telegraf gathers stats from any up interface (excluding loopback)
+	## Setting interfaces will tell it to gather these explicit interfaces,
+	## regardless of status.
+	##
+{% if ansible_virtualization_type != 'lxc' %}
+	interfaces = [ '{{ (ansible_interfaces | difference(veth_interfaces.stdout_lines)) | join("','") }}' ]
+{% else %}
+	interfaces = [ '{{ ansible_interfaces | join("','") }}' ]
+{% endif %}

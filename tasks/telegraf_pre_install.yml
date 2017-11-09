@@ -1,0 +1,22 @@
+---
+
+- name: Get repo key
+  apt_key:
+    url: "{{ influxdb_repo_key }}"
+    state: present
+  when: ansible_pkg_mgr == 'apt'
+
+- name: Get apt repo
+  apt_repository:
+    repo: "deb {{ influxdata_repo_baseurl }} {{ ansible_distribution_release }} stable"
+    state: present
+    update_cache: yes
+  when: ansible_pkg_mgr == 'apt'
+
+- name: Get rpm repo
+  yum_repository:
+    name: influxdata
+    description: InfluxData repository
+    baseurl: "{{ influxdata_base_url }}"
+  when: ansible_pkg_mgr == 'rpm'
+

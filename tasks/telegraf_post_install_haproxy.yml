@@ -1,0 +1,25 @@
+- name: Get stats socket path
+  shell: gawk '/stats socket/ {print $3}' /etc/haproxy/haproxy.cfg
+  register: haproxy_stats_socket
+
+- name: Add telegraf to haclient group
+  user: name=telegraf append=yes groups=haclient
+  when:
+    - inventory_hostname in groups['network_all']
+    - ansible_virtualization_role != 'host' # Already run as root
+  notify:
+    - restart telegraf
+
+- name: Telegraf configuration for HAProxy
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "root"
+    group: "root"
+  with_items:
+    - { src: "haproxy.conf.j2", dest: "/etc/telegraf/telegraf.d/haproxy.conf" }
+  tags:
+    - telegraf_client-config
+  notify:
+    - restart telegraf
+

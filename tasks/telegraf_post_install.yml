@@ -1,0 +1,71 @@
+- name: Telegraf basic setup
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "root"
+    group: "root"
+  with_items:
+    - { src: "telegraf.conf.j2", dest: "/etc/telegraf/telegraf.conf" }
+    - { src: "system.conf.j2", dest: "/etc/telegraf/telegraf.d/system.conf" }
+    - { src: "processes.conf.j2", dest: "/etc/telegraf/telegraf.d/processes.conf" }
+    - { src: "cgroup.conf.j2", dest: "/etc/telegraf/telegraf.d/cgroup.conf" }
+    - { src: "output.conf.j2", dest: "/etc/telegraf/telegraf.d/output.conf" }
+  tags:
+    - client-config
+  notify:
+    - restart telegraf
+
+- include: telegraf_post_install_net.yml
+
+- name: Telegraf setup for physical hosts
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "root"
+    group: "root"
+  with_items:
+    - { src: "ipmi.conf.j2", dest: "/etc/telegraf/telegraf.d/ipmi.conf" }
+  when: ansible_virtualization_role == 'host'
+  tags:
+    - client-config
+  notify:
+    - restart telegraf
+
+- name: Telegraf privileges on physical or haproxy hosts (systemd custom directory)
+  file:
+    path: /etc/systemd/system/telegraf.service.d
+    state: directory
+  when: ansible_virtualization_role == 'host' or inventory_hostname in groups['haproxy']
+  tags:
+    - client-config
+  notify:
+    - restart telegraf
+
+- name: Telegraf privileges on physical or haproxy hosts (systemd custom file)
+  copy:
+    src: user.conf
+    dest: /etc/systemd/system/telegraf.service.d/user.conf
+  when: ansible_virtualization_role == 'host' or inventory_hostname in groups['haproxy']
+  tags:
+    - client-config
+  notify:
+    - reload systemd
+    - restart telegraf
+
+- include: telegraf_post_install_rabbitmq.yml
+  when: inventory_hostname in groups['rabbitmq']
+
+- include: telegraf_post_install_galera.yml
+  when: inventory_hostname in groups['galera']
+
+- include: telegraf_post_install_haproxy.yml
+  when: inventory_hostname in groups['haproxy'] or inventory_hostname in groups['network_all']
+
+- include: telegraf_post_install_utility.yml
+  when: inventory_hostname in groups['utility']
+
+- include: telegraf_post_install_swift.yml
+  when: inventory_hostname in groups['swift-proxy_containers']
+
+- name: Enable Telegraf at boot time
+  service: name=telegraf enabled=true

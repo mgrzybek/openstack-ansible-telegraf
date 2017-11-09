@@ -1,0 +1,13 @@
+- name: Telegraf configuration for Galera
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "root"
+    group: "root"
+  with_items:
+    - { src: "mariadb.conf.j2", dest: "/etc/telegraf/telegraf.d/mariadb.conf" }
+  tags:
+    - telegraf_client-config
+  notify:
+    - restart telegraf
+

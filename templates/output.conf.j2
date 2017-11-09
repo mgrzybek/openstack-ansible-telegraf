@@ -1,0 +1,94 @@
+# {{ ansible_managed }}
+
+# Configuration for the AMQP server to send metrics to
+{% if telegraf_output == 'amqp' %}
+[[outputs.amqp]]
+	## AMQP url
+	url = "{{ telegraf_output_amqp_url }}"
+	## AMQP exchange
+	exchange = "{{ telegraf_output_amqp_exchange }}"
+
+	## Auth method. PLAIN and EXTERNAL are supported
+	auth_method = "{{ telegraf_output_amqp_auth_method }}"
+
+	## Telegraf tag to use as a routing key
+	##  ie, if this tag exists, it's value will be used as the routing key
+	routing_tag = "{{ telegraf_output_amqp_routing_tag }}"
+
+	## Optional SSL Config
+	# ssl_ca = "/etc/telegraf/ca.pem"
+	# ssl_cert = "/etc/telegraf/cert.pem"
+	# ssl_key = "/etc/telegraf/key.pem"
+	## Use SSL but skip chain & host verification
+	# insecure_skip_verify = false
+
+	## Data format to output.
+	## Each data format has it's own unique set of configuration options, read
+	## more about them here:
+	## https://github.com/influxdata/telegraf/blob/master/docs/DATA_FORMATS_OUTPUT.md
+	data_format = "{{ telegraf_output_amqp_data_format }}"
+
+	## Graphite output template
+	## see https://github.com/influxdata/telegraf/blob/master/docs/DATA_FORMATS_OUTPUT.md
+	template = "{{ telegraf_output_amqp_template }}"
+{% endif %}
+
+{% if telegraf_output == 'influxdb' %}
+[[outputs.influxdb]]
+	## The full HTTP or UDP URL for your InfluxDB instance.
+	##
+	## Multiple urls can be specified as part of the same cluster,
+	## this means that only ONE of the urls will be written to each interval.
+	# urls = ["udp://localhost:8089"] # UDP endpoint example
+	urls = ["{{ telegraf_output_influxdb_targets | map('quote') | join(",") }}"] # required
+
+	## The target database for metrics (telegraf will create it if not exists).
+	database = "{{ telegraf_output_influxdb_database }}" # required
+
+	## Name of existing retention policy to write to.  Empty string writes to
+	## the default retention policy.
+	retention_policy = "{{ telegraf_output_influxdb_retention_policy }}"
+
+	## Write consistency (clusters only), can be: "any", "one", "quorum", "all"
+	write_consistency = "any"
+
+	## Write timeout (for the InfluxDB client), formatted as a string.
+	## If not provided, will default to 5s. 0s means no timeout (not recommended).
+	timeout = "{{ telegraf_output_influxdb_timeout }}"
+{% if telegraf_output_influxdb_username != 'None' %}
+	username = "{{ telegraf_output_influxdb_username }}"
+{% endif %}
+{% if telegraf_output_influxdb_password != 'None' %}
+	password = "{{ telegraf_output_influxdb_password }}"
+{% endif %}
+	## Set the user agent for HTTP POSTs (can be useful for log differentiation)
+	user_agent = "{{ telegraf_output_influxdb_user_agent }}"
+	## Set UDP payload size, defaults to InfluxDB UDP Client default (512 bytes)
+	udp_payload = {{ telegraf_output_influxdb_udp_payload }}
+
+	## Optional SSL Config
+	# ssl_ca = "/etc/telegraf/ca.pem"
+	# ssl_cert = "/etc/telegraf/cert.pem"
+	# ssl_key = "/etc/telegraf/key.pem"
+	## Use SSL but skip chain & host verification
+	insecure_skip_verify = {{ telegraf_output_influxdb_insecure_skip_verify }}
+
+	## HTTP Proxy Config
+{% if telegraf_output_influxdb_http_proxy != 'None' %}
+	http_proxy = "{{ telegraf_output_influxdb_http_proxy }}"
+{% endif %}
+
+	## Optional HTTP headers
+{% if telegraf_output_influxdb_http_headers_key != 'None' and telegraf_output_influxdb_http_headers_value != 'None' %}
+	http_headers = {"{{ telegraf_output_influxdb_http_headers_key }}" = "{{ telegraf_output_influxdb_http_headers_value }}"}
+{% endif %}
+
+	## Compress each HTTP request payload using GZIP.
+	# content_encoding = "gzip"
+{% endif %}
+
+{% if telegraf_output_prometheus_client is defined %}
+[[outputs.prometheus_client]]
+  listen = "{{ telegraf_output_prometheus_client_listen | default(':9126') }}"
+  expiration_interval = "{{ telegraf_output_prometheus_client_expiration_interval | default('60s') }}"
+{% endif %}

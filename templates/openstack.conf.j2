@@ -1,0 +1,32 @@
+# Read metrics from one or more commands that can output to stdout
+[[inputs.exec]]
+	## Commands array
+	commands = [
+		"sudo /usr/local/bin/{{ telegraf_openstack_scripts | join('",\n\t\t"sudo /usr/local/bin/') }}"
+	]
+
+	## Timeout for each command to complete.
+	timeout = "65s"
+
+	## measurement name suffix (for separating different commands)
+	#name_suffix = "_mycollector"
+
+	## Data format to consume.
+	## Each data format has its own unique set of configuration options, read
+	## more about them here:
+	## https://github.com/influxdata/telegraf/blob/master/docs/DATA_FORMATS_INPUT.md
+	data_format = "graphite"
+
+	{%   set run_commands = [] %}
+	{%   for key, value in command_plugins.items() %}
+	{%     if value.when_group | bool and (value.group == inventory_hostname or inventory_hostname in value.group | default([])) %}
+	{%       set _ = run_commands.extend(value.command) %}
+	{%     endif %}
+	{%   endfor %}
+
+	{%   if run_commands %}
+	[[inputs.exec]]
+	  commands = [{{ run_commands | map('quote') | join(',') }}]
+	  timeout = "{{ (run_commands | length) * 8 }}s"
+	  data_format = "influx"
+	{%   endif %}

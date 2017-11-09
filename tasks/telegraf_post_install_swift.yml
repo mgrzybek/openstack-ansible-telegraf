@@ -1,0 +1,12 @@
+- name: Telegraf configuration for swift proxies
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "root"
+    group: "root"
+  with_items:
+    - { src: "swift.conf.j2", dest: "/etc/telegraf/telegraf.d/swift.conf" }
+  tags:
+    - telegraf_client-config
+  notify:
+    - restart telegraf

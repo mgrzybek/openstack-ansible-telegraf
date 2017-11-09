@@ -1,0 +1,29 @@
+# {{ ansible_managed }}
+
+[[inputs.rabbitmq]]
+	# Management Plugin url. (default: http://localhost:15672)
+	url = "http://localhost:15672"
+	# Credentials
+	username = "{{ rabbitmq_monitoring_userid|default('monitoring') }}"
+	password = "{{ rabbitmq_monitoring_password }}"
+
+	## Optional SSL Config
+	# ssl_ca = "/etc/telegraf/ca.pem"
+	# ssl_cert = "/etc/telegraf/cert.pem"
+	# ssl_key = "/etc/telegraf/key.pem"
+	## Use SSL but skip chain & host verification
+	insecure_skip_verify = true
+
+	## Optional request timeouts
+	##
+	## ResponseHeaderTimeout, if non-zero, specifies the amount of time to wait
+	## for a server's response headers after fully writing the request.
+	# header_timeout = "3s"
+	##
+	## client_timeout specifies a time limit for requests made by this client.
+	## Includes connection time, any redirects, and reading the response body.
+	# client_timeout = "4s"
+
+	## A list of nodes to pull metrics about. If not specified, metrics for
+	## all nodes are gathered.
+	nodes = ["rabbit@{{ ansible_hostname }}"]

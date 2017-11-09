@@ -1,0 +1,104 @@
+# {{ ansible_managed }}
+
+# Telegraf Configuration
+#
+# Telegraf is entirely plugin driven. All metrics are gathered from the
+# declared inputs, and sent to the declared outputs.
+{% if command_plugins is defined %}
+{%   set run_commands = [] %}
+{%   for key, value in command_plugins.items() %}
+{%     if value.when_group | bool and (value.group == inventory_hostname or inventory_hostname in value.group | default([])) %}
+{%       set _ = run_commands.extend(value.command) %}
+{%     endif %}
+{%   endfor %}
+
+
+{# The run_int adds padding to the interval so that plugins being added to the system have #}
+{#  enough time to execute. Every added plugin will add 8 seconds to the interval with a #}
+{#  default of 24. This value is later used as the flush interval which needs to be 2x the agent. #}
+{% set run_int = run_commands | length %}
+{% set interval = (run_int < 1) | ternary(0, run_int * 8) | int + 24 %}
+
+{% else %}
+{% set interval = telegraf_agent_interval %}
+{% endif %}
+
+# Global tags can be specified here in key="value" format.
+[global_tags]
+  # dc = "us-east-1" # will tag all metrics with dc=us-east-1
+{% if telegraf_global_tags_dc != 'None' %}
+  dc = {{ telegraf_global_tags_dc }}
+{% endif %}
+  # rack = "1a"
+{% if telegraf_global_tags_rack != 'None' %}
+  rack = {{ telegraf_global_tags_rack }}
+{% endif %}
+{% if telegraf_global_tags_add_node_type == true %}
+{% if ansible_virtualization_role == 'host' %}
+  node_type = "physical_host"
+{% elif ansible_virtualization_type == 'lxc' %}
+  node_type = "container"
+{% else %}
+	node_type = "{{ ansible_virtualization_type }}"
+{% endif %}
+{% endif %}
+  ## Environment variables can be used as tags, and throughout the config file
+  # user = "$USER"
+
+
+# Configuration for telegraf agent
+[agent]
+  ## Default data collection interval for all inputs
+  interval = "{{ interval }}s"
+  ## Rounds collection interval to 'interval'
+  ## ie, if interval="10s" then always collect on :00, :10, :20, etc.
+  round_interval = false
+
+  ## Telegraf will send metrics to outputs in batches of at most
+  ## metric_batch_size metrics.
+  ## This controls the size of writes that Telegraf sends to output plugins.
+  metric_batch_size = {{ telegraf_metric_batch_size }}
+
+  ## For failed writes, telegraf will cache metric_buffer_limit metrics for each
+  ## output, and will flush this buffer on a successful write. Oldest metrics
+  ## are dropped first when this buffer fills.
+  ## This buffer only fills when writes fail to output plugin(s).
+  metric_buffer_limit = {{ telegraf_metric_buffer_limit }}
+
+  ## Collection jitter is used to jitter the collection by a random amount.
+  ## Each plugin will sleep for a random time within jitter before collecting.
+  ## This can be used to avoid many plugins querying things like sysfs at the
+  ## same time, which can have a measurable effect on the system.
+  collection_jitter = "{{ telegraf_collection_jitter }}"
+
+  ## Default flushing interval for all outputs. You shouldn't set this below
+  ## interval. Maximum flush_interval will be flush_interval + flush_jitter
+  flush_interval = "{{ interval * 2 }}s"
+
+  ## Jitter the flush interval by a random amount. This is primarily to avoid
+  ## large write spikes for users running a large number of telegraf instances.
+  ## ie, a jitter of 5s and interval 10s means flushes will happen every 10-15s
+  flush_jitter = "8s"
+
+  ## By default, precision will be set to the same timestamp order as the
+  ## collection interval, with the maximum being 1s.
+  ## Precision will NOT be used for service inputs, such as logparser and statsd.
+  ## Valid values are "ns", "us" (or "µs"), "ms", "s".
+  precision = ""
+
+  ## Logging configuration:
+  ## Run telegraf with debug log messages.
+  debug = false
+  ## Run telegraf in quiet mode (error log messages only).
+  quiet = false
+  ## Specify the log file name. The empty string means to log to stderr.
+  logfile = ""
+
+  ## Override default hostname, if empty use os.Hostname()
+{% if inventory_hostname in groups['all_containers'] %}
+  hostname = "{{ ansible_hostname }}"
+{% else %}
+  hostname = "{{ inventory_hostname }}"
+{% endif %}
+  ## If set to true, do no set the "host" tag in the telegraf agent.
+  omit_hostname = false

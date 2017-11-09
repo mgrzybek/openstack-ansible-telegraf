@@ -1,0 +1,3 @@
+# {{ ansible_managed }}
+
+telegraf ALL=(ALL) NOPASSWD: /usr/local/bin/{{ telegraf_openstack_scripts | join(',\\\n\t\t/usr/local/bin/') }}

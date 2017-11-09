@@ -1,0 +1,51 @@
+---
+
+influxdb_repo_root: https://repos.influxdata.com
+influxdb_repo_key: https://repos.influxdata.com/influxdb.key
+
+telegraf_server_package_state: latest
+cache_timeout: 600
+
+telegraf_global_tags_dc: None
+telegraf_global_tags_rack: None
+telegraf_global_tags_add_node_type: false
+
+telegraf_agent_interval: 60
+
+telegraf_metric_batch_size: 1024
+telegraf_metric_buffer_limit: 10240
+telegraf_collection_jitter: 8s
+
+telegraf_output: amqp # influxdb
+telegraf_output_amqp_url: None
+telegraf_output_amqp_exchange: None
+telegraf_output_amqp_auth_method: PLAIN
+telegraf_output_amqp_routing_tag: field
+telegraf_output_amqp_data_format: graphite
+telegraf_output_amqp_template: host.measurement.tags.field
+
+telegraf_output_influxdb_targets:
+  - "http://localhost:8086"
+
+telegraf_output_influxdb_database: telegraf
+telegraf_output_influxdb_retention_policy:
+telegraf_output_influxdb_write_consistency: any # any, one, quorum, all
+telegraf_output_influxdb_timeout: 5s
+telegraf_output_influxdb_username: None
+telegraf_output_influxdb_password: None
+telegraf_output_influxdb_user_agent: telegraf
+telegraf_output_influxdb_udp_payload: 512
+telegraf_output_influxdb_ssl_ca:
+telegraf_output_influxdb_ssl_cert:
+telegraf_output_influxdb_ssl_key:
+telegraf_output_influxdb_insecure_skip_verify: false
+telegraf_output_influxdb_http_proxy: None
+telegraf_output_influxdb_http_headers_key: None
+telegraf_output_influxdb_http_headers_value: None
+
+telegraf_openstack_scripts:
+  - glance-stats.sh
+  - hypervisors-stats.sh
+  - instances-stats.sh
+  - neutron-stats.sh
+  - usage-stats.sh

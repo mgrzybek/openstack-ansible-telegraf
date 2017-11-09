@@ -1,0 +1,33 @@
+# {{ ansible_managed }}
+
+[[inputs.cpu]]
+  ## Whether to report per-cpu stats or not
+  percpu = true
+  ## Whether to report total system cpu stats or not
+  totalcpu = true
+  ## If true, collect raw CPU time metrics.
+  collect_cpu_time = false
+
+[[inputs.conntrack]]
+  files = ["ip_conntrack_count","ip_conntrack_max",
+            "nf_conntrack_count","nf_conntrack_max"]
+  dirs = ["/proc/sys/net/ipv4/netfilter","/proc/sys/net/netfilter"]
+
+[[inputs.mem]]
+
+{% if not inventory_hostname in groups['all_containers'] %}
+[[inputs.disk]]
+  ignore_fs = ["tmpfs", "devtmpfs"]
+
+[[inputs.diskio]]
+
+[[inputs.kernel]]
+
+[[inputs.netstat]]
+
+
+[[inputs.swap]]
+
+[[inputs.system]]
+
+{% endif %}

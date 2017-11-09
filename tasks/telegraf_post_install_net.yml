@@ -1,0 +1,17 @@
+- name: Get veth devices on container hosting servers
+  shell: (ip l|grep lo; ip link show type veth)|awk '/mtu/{gsub(":","");gsub("@.*","");print $2}'
+  register: veth_interfaces
+  when: ansible_virtualization_type != 'lxc'
+
+- name: Telegraf configuration for net interfaces
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "root"
+    group: "root"
+  with_items:
+    - { src: "net.conf.j2", dest: "/etc/telegraf/telegraf.d/net.conf" }
+  tags:
+    - telegraf_client-config
+  notify:
+    - restart telegraf

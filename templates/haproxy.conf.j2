@@ -1,0 +1,50 @@
+# {{ ansible_managed }}
+
+[[inputs.haproxy]]
+	## An array of address to gather stats about. Specify an ip on hostname
+	## with optional port. ie localhost, 10.10.3.33:1936, etc.
+	## Make sure you specify the complete path to the stats endpoint
+	## including the protocol, ie http://10.10.3.33:1936/haproxy?stats
+
+	## If no servers are specified, then default to 127.0.0.1:1936/haproxy?stats
+	# servers = ["http://myhaproxy.com:1936/haproxy?stats"]
+
+	## You can also use local socket with standard wildcard globbing.
+	## Server address not starting with 'http' will be treated as a possible
+	## socket, so both examples below are valid.
+	servers = ["socket:{{ haproxy_stats_socket }}"]
+
+	## By default, some of the fields are renamed from what haproxy calls them.
+	## Setting this option to true results in the plugin keeping the original
+	## field names.
+	# keep_field_names = true
+
+	## Optional SSL Config
+	# ssl_ca = "/etc/telegraf/ca.pem"
+	# ssl_cert = "/etc/telegraf/cert.pem"
+	# ssl_key = "/etc/telegraf/key.pem"
+	## Use SSL but skip chain & host verification
+	# insecure_skip_verify = false
+
+
+[[inputs.procstat]]
+	# Must specify one of: pid_file, exe, or pattern
+	# PID file to monitor process
+	pid_file = "/run/haproxy.pid"
+	# executable name (ie, pgrep <exe>)
+	# exe = "nginx"
+	# pattern as argument for pgrep (ie, pgrep -f <pattern>)
+	# pattern = "nginx"
+	# user as argument for pgrep (ie, pgrep -u <user>)
+	# user = "nginx"
+
+	# override for process_name
+	# This is optional; default is sourced from /proc/<pid>/status
+	# process_name = "bar"
+	## Field name prefix
+	prefix = ""
+	## comment this out if you want raw cpu_time stats
+	fielddrop = ["pidfile"]
+	## This is optional; moves pid into a tag instead of a field
+	pid_tag = false
+

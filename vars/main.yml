@@ -1,0 +1,5 @@
+telegraf_distro_packages:
+  - telegraf
+  - gawk
+telegraf_package_state: latest
+
