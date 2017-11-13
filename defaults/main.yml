@@ -43,6 +43,7 @@ telegraf_output_influxdb_http_proxy: None
 telegraf_output_influxdb_http_headers_key: None
 telegraf_output_influxdb_http_headers_value: None
 
+telegraf_openstack_scripts_path: /opt/telegraf
 telegraf_openstack_scripts:
   - glance-stats.sh
   - hypervisors-stats.sh
