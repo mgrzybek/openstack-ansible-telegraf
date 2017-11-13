@@ -61,6 +61,19 @@
 - include: telegraf_post_install_haproxy.yml
   when: inventory_hostname in groups['haproxy'] or inventory_hostname in groups['network_all']
 
+- name: Telegraf directory for custom plugins
+  file:
+    path: /opt/telegraf
+    state: directory
+  when: inventory_hostname in groups['utility'] or inventory_hostname in groups['nova_compute']
+  tags:
+    - client-config
+
+- include: telegraf_post_install_nova.yml
+  when:
+    - inventory_hostname in groups['nova_compute']
+    - telegraf_nova_scripts | length > 0
+
 - include: telegraf_post_install_utility.yml
   when: inventory_hostname in groups['utility']
 

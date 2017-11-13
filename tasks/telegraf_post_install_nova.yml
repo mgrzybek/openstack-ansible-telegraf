@@ -1,0 +1,16 @@
+- name: Install scripts to get KVM / QEMU stats
+  copy: src={{ item }} dest=/opt/telegraf/{{ item }} mode=0755
+  with_items: "{{ telegraf_nova_scripts }}"
+
+- name: Telegraf configuration for KVM / QEMU stats
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "root"
+    group: "root"
+  with_items:
+    - { src: "openstack.conf.j2", dest: "/etc/telegraf/telegraf.d/openstack.conf" }
+  tags:
+    - telegraf_client-config
+  notify:
+    - restart telegraf
