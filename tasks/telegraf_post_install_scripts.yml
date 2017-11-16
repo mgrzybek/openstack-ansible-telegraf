@@ -1,0 +1,27 @@
+- name: Install scripts to get openstack stats
+  template:
+    src: "{{ item.value.plugin_source_path }}"
+    dest: "{{ telegraf_openstack_scripts_path }}/{{ item.value.plugin_name }}"
+    mode: '0755'
+    owner: "root"
+    group: "root"
+  with_dict: "{{ telegraf_openstack_scripts }}"
+  when:
+    - item.value.when_group | bool
+    - item.value.group == inventory_hostname or inventory_hostname in item.value.group | default([])
+  tags:
+    - telegraf_client-config
+
+- name: Telegraf configuration for openstack scripts
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "root"
+    group: "root"
+  with_items:
+    - { src: "openstack.conf.j2", dest: "/etc/telegraf/telegraf.d/openstack.conf" }
+    - { src: "telegraf.sudo.j2", dest: "/etc/sudoers.d/telegraf" }
+  tags:
+    - telegraf_client-config
+  notify:
+    - restart telegraf
