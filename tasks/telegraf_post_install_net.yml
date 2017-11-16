@@ -2,6 +2,8 @@
   shell: (ip l|grep lo; ip link show type veth)|awk '/mtu/{gsub(":","");gsub("@.*","");print $2}'
   register: veth_interfaces
   when: ansible_virtualization_type != 'lxc'
+  tags:
+    - telegraf_client-config
 
 - name: Telegraf configuration for net interfaces
   template:
