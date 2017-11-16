@@ -28,7 +28,7 @@ telegraf_output_influxdb_targets:
   - "http://localhost:8086"
 
 telegraf_output_influxdb_database: telegraf
-telegraf_output_influxdb_retention_policy:
+telegraf_output_influxdb_retention_policy: openstack
 telegraf_output_influxdb_write_consistency: any # any, one, quorum, all
 telegraf_output_influxdb_timeout: 5s
 telegraf_output_influxdb_username: None
@@ -44,12 +44,56 @@ telegraf_output_influxdb_http_headers_key: None
 telegraf_output_influxdb_http_headers_value: None
 
 telegraf_openstack_scripts_path: /opt/telegraf
+telegraf_openstack_scripts_data_format: graĥite # influx
+telegraf_openstack_scripts_timeout: 8
 
-telegraf_openstack_nova_scripts:
+telegraf_openstack_scripts:
+  glance:
+    plugin_name: "glance-stats.sh"
+    plugin_source_path: "scripts/glance-stats.sh"
+    command:
+      - "sudo {{ telegraf_openstack_scripts_path }}/glance-stats.sh"
+    sudoers_entry:
+      - "{{ telegraf_openstack_scripts_path }}/glance-stats.sh"
+    group: "{{ groups['utility_all'] }}"
+    when_group: "{{ (groups['glance_api'] | default([]) | length) > 0 }}"
 
-telegraf_openstack_utility_scripts:
-  - glance-stats.sh
-  - hypervisors-stats.sh
-  - instances-stats.sh
-  - neutron-stats.sh
-  - usage-stats.sh
+  hypervisors:
+    plugin_name: "hypervisors-stats.sh"
+    plugin_source_path: "scripts/hypervisors-stats.sh"
+    command:
+      - "sudo {{ telegraf_openstack_scripts_path }}/hypervisors-stats.sh"
+    sudoers_entry:
+      - "{{ telegraf_openstack_scripts_path }}/hypervisors-stats.sh"
+    group: "{{ groups['utility_all'] }}"
+    when_group: "{{ (groups['nova_compute'] | default([]) | length) > 0 }}"
+
+  instances:
+    plugin_name: "instances-stats.sh"
+    plugin_source_path: "scripts/instances-stats.sh"
+    command:
+      - "sudo {{ telegraf_openstack_scripts_path }}/instances-stats.sh"
+    sudoers_entry:
+      - "{{ telegraf_openstack_scripts_path }}/instances-stats.sh"
+    group: "{{ groups['utility_all'] }}"
+    when_group: "{{ (groups['nova_compute'] | default([]) | length) > 0 }}"
+
+  neutron:
+    plugin_name: "neutron-stats.sh"
+    plugin_source_path: "scripts/neutron-stats.sh"
+    command:
+      - "sudo {{ telegraf_openstack_scripts_path }}/neutron-stats.sh"
+    sudoers_entry:
+      - "{{ telegraf_openstack_scripts_path }}/neutron-stats.sh"
+    group: "{{ groups['utility_all'] }}"
+    when_group: "{{ (groups['neutron_all'] | default([]) | length) > 0 }}"
+
+  usage:
+    plugin_name: "usage-stats.sh"
+    plugin_source_path: "scripts/usage-stats.sh"
+    command:
+      - "sudo {{ telegraf_openstack_scripts_path }}/usage-stats.sh"
+    sudoers_entry:
+      - "{{ telegraf_openstack_scripts_path }}/usage-stats.sh"
+    group: "{{ groups['utility_all'] }}"
+    when_group: "{{ (groups['all'] | default([]) | length) > 0 }}"
