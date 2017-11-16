@@ -1,27 +1,6 @@
-{% if inventory_hostname in groups['utility'] %}
-# Read metrics from one or more commands that can output to stdout
-[[inputs.exec]]
-	## Commands array
-	commands = [
-		"sudo {{ telegraf_openstack_scripts_path }}/{{ telegraf_openstack_scripts | map('quote') | join(',') }}"
-	]
-
-	## Timeout for each command to complete.
-	timeout = "65s"
-
-	## measurement name suffix (for separating different commands)
-	#name_suffix = "_mycollector"
-
-	## Data format to consume.
-	## Each data format has its own unique set of configuration options, read
-	## more about them here:
-	## https://github.com/influxdata/telegraf/blob/master/docs/DATA_FORMATS_INPUT.md
-	data_format = "graphite"
-
-{% elif inventory_hostname in groups['nova_compute'] %}
-
+# {{ ansible_managed }}
 {%   set run_commands = [] %}
-{%   for key, value in telegraf_openstack_nova_scripts.items() %}
+{%   for key, value in telegraf_openstack_scripts.items() %}
 {%     if value.when_group | bool and (value.group == inventory_hostname or inventory_hostname in value.group | default([])) %}
 {%       set _ = run_commands.extend(value.command) %}
 {%     endif %}
@@ -29,9 +8,7 @@
 
 {%   if run_commands %}
 [[inputs.exec]]
-  commands = [{{ run_commands | map('quote') | join(',') }}]
-	timeout = "{{ (run_commands | length) * 8 }}s"
-	data_format = "influx"
+	commands = [{{ run_commands | map('quote') | join(',\n\t\t') }}]
+	timeout = "{{ (run_commands | length) * telegraf_openstack_scripts_timeout }}s"
+	data_format = "{{ telegraf_openstack_scripts_data_format }}"
 {%   endif %}
-
-{% endif %}

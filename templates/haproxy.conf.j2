@@ -12,7 +12,7 @@
 	## You can also use local socket with standard wildcard globbing.
 	## Server address not starting with 'http' will be treated as a possible
 	## socket, so both examples below are valid.
-	servers = ["socket:{{ haproxy_stats_socket }}"]
+	servers = ["socket:{{ haproxy_stats_socket.stdout }}"]
 
 	## By default, some of the fields are renamed from what haproxy calls them.
 	## Setting this option to true results in the plugin keeping the original

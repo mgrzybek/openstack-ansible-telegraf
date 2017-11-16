@@ -1,3 +1,12 @@
 # {{ ansible_managed }}
 
-telegraf ALL=(ALL) NOPASSWD: /usr/local/bin/{{ telegraf_openstack_scripts | join(',\\\n\t\t/usr/local/bin/') }}
+{% set run_commands = [] %}
+{% for key, value in telegraf_openstack_scripts.items() %}
+{% 	if value.when_group | bool and (value.group == inventory_hostname or inventory_hostname in value.group | default([])) %}
+{% 		set _ = run_commands.extend(value.sudoers_entry) %}
+{% 	endif %}
+{% endfor %}
+
+{% if run_commands %}
+telegraf ALL=(ALL) NOPASSWD: {{ run_commands | join(', \ \n\t\t\t\t') }}
+{% endif %}
