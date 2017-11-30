@@ -6,10 +6,23 @@
     group: "root"
   with_items:
     - { src: "telegraf.conf.j2", dest: "/etc/telegraf/telegraf.conf" }
+    - { src: "output.conf.j2", dest: "/etc/telegraf/telegraf.d/output.conf" }
+  tags:
+    - client-config
+  notify:
+    - restart telegraf
+
+- name: Telegraf basic setup for non-container hosts
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "root"
+    group: "root"
+  with_items:
     - { src: "system.conf.j2", dest: "/etc/telegraf/telegraf.d/system.conf" }
     - { src: "processes.conf.j2", dest: "/etc/telegraf/telegraf.d/processes.conf" }
     - { src: "cgroup.conf.j2", dest: "/etc/telegraf/telegraf.d/cgroup.conf" }
-    - { src: "output.conf.j2", dest: "/etc/telegraf/telegraf.d/output.conf" }
+  when: ansible_virtualization_type != 'lxc'
   tags:
     - client-config
   notify:
