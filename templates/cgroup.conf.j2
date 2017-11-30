@@ -7,41 +7,43 @@
 	## want to monitor if you have a large number of cgroups, to avoid
 	## any cardinality issues.
 	paths = [
-{% if inventory_hostname in groups['all_containers'] %}
-		"/sys/fs/cgroup/cpuacct/*",
-		"/sys/fs/cgroup/memory/",
-		"/sys/fs/cgroup/blkio/"
-{% endif %}
 {% if inventory_hostname in groups['haproxy'] %}
+		# Keepalived
 		"/sys/fs/cgroup/cpuacct/system.slice/keepalived.service/",
 		"/sys/fs/cgroup/memory/system.slice/keepalived.service/",
-		"/sys/fs/cgroup/blkio/system.slice/keepalived.service/",
+		#"/sys/fs/cgroup/blkio/system.slice/keepalived.service/",
 		"/sys/fs/cgroup/cpuacct/system.slice/keepalived.service/",
 		"/sys/fs/cgroup/memory/system.slice/keepalived.service/",
-		"/sys/fs/cgroup/blkio/system.slice/keepalived.service/"
+		#"/sys/fs/cgroup/blkio/system.slice/keepalived.service/"
 {% endif %}
 {% if inventory_hostname in groups['compute_hosts'] and nova_virt_type == 'lxd' %}
+		# Compute hosts with LXD
 		"/sys/fs/cgroup/cpuacct/lxc/",
 		"/sys/fs/cgroup/memory/lxc/",
-		"/sys/fs/cgroup/blkio/lxc/",
+		#"/sys/fs/cgroup/blkio/lxc/",
+{% if inventory_hostname in groups['compute_hosts'] %}
+		# Compute hosts common
 		"/sys/fs/cgroup/cpuacct/neutron.slice/",
 		"/sys/fs/cgroup/memory/neutron.slice/",
-		"/sys/fs/cgroup/blkio/neutron.slice/",
+		#"/sys/fs/cgroup/blkio/neutron.slice/",
 		"/sys/fs/cgroup/cpuacct/nova.slice/",
 		"/sys/fs/cgroup/memory/nova.slice/",
-		"/sys/fs/cgroup/blkio/nova.slice/",
+		#"/sys/fs/cgroup/blkio/nova.slice/",
 		"/sys/fs/cgroup/cpuacct/ceilometer.slice/",
 		"/sys/fs/cgroup/memory/ceilometer.slice/",
-		"/sys/fs/cgroup/blkio/ceilometer.slice/",
+		#"/sys/fs/cgroup/blkio/ceilometer.slice/",
+{% endif %}
+{% if inventory_hostname in groups['shared-infra_hosts'] %}
+		# Containers' metrics
+		"/sys/fs/cgroup/cpuacct/lxc/*/*",
+		"/sys/fs/cgroup/memory/lxc/*/*",
+		#"/sys/fs/cgroup/blkio/lxc/*/*",
 {% endif %}
 	]
 
 	## cgroup stat fields, as file names, globs are supported.
 	## these file names are appended to each path from above.
 	files = [
-		"cpuacct.usage_percpu",
-		"cpuacct.usage",
-		"memory.*usage*",
-		"memory.limit_in_bytes",
-		"memory.stat"
+		"memory.*usage*", "memory.limit_in_bytes",
+		"cpuacct.usage", "cpu.cfs_period_us", "cpu.cfs_quota_us"
 	]
