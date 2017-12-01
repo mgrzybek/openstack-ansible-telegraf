@@ -44,7 +44,7 @@ telegraf_output_influxdb_http_headers_key: None
 telegraf_output_influxdb_http_headers_value: None
 
 telegraf_openstack_scripts_path: /opt/telegraf
-telegraf_openstack_scripts_data_format: graĥite # influx
+telegraf_openstack_scripts_data_format: graphite # influx
 telegraf_openstack_scripts_timeout: 8
 
 telegraf_openstack_scripts:
