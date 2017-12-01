@@ -1,5 +1,53 @@
 ---
+
 - hosts: localhost
   remote_user: root
+  pre_tasks:
+    - name: Ensure influxdb output is available
+      wait_for: host={{ item | urlsplit('hostname') }} port={{ item | urlsplit('port') }}
+      with_items: "{{ telegraf_output_influxdb_targets }}"
+      when:
+       - telegraf_output == 'influxdb'
+       - telegraf_output_influxdb_http_proxy == 'None'
+    - name: Ensure HTTP proxy is available (influxdb + http proxy)
+      wait_for: host={{ telegraf_output_influxdb_http_proxy | urlsplit('hostname') }} port={{ telegraf_output_influxdb_http_proxy | urlsplit('port') }}
+      when:
+       - telegraf_output == 'influxdb'
+       - telegraf_output_influxdb_http_proxy != 'None'
+    - name: Ensure amqp output is available
+      wait_for: host={{ telegraf_output_amqp_server }} port=5672
+      when: telegraf_output == 'amqp'
   roles:
-    - metrics
+    - openstack-ansible-telegraf
+  vars:
+     telegraf_output: amqp
+     telegraf_output_amqp_user: 
+     telegraf_output_amqp_password: 
+     telegraf_output_amqp_server: 
+     telegraf_output_amqp_vhost: 
+     telegraf_output_amqp_url: "amqp://{{ telegraf_output_amqp_user }}:{{ telegraf_output_amqp_password }}@{{ telegraf_output_amqp_server }}:5672/{{ telegraf_output_amqp_vhost }}"
+
+- hosts: localhost
+  remote_user: root
+  pre_tasks:
+    - name: Ensure influxdb output is available
+      wait_for: host={{ item | urlsplit('hostname') }} port={{ item | urlsplit('port') }}
+      with_items: "{{ telegraf_output_influxdb_targets }}"
+      when:
+       - telegraf_output == 'influxdb'
+       - telegraf_output_influxdb_http_proxy == 'None'
+    - name: Ensure HTTP proxy is available (influxdb + http proxy)
+      wait_for: host={{ telegraf_output_influxdb_http_proxy | urlsplit('hostname') }} port={{ telegraf_output_influxdb_http_proxy | urlsplit('port') }}
+      when:
+       - telegraf_output == 'influxdb'
+       - telegraf_output_influxdb_http_proxy != 'None'
+    - name: Ensure amqp output is available
+      wait_for: host={{ telegraf_output_amqp_server }} port=5672
+      when: telegraf_output == 'amqp'
+  roles:
+    - openstack-ansible-telegraf
+  vars:
+     telegraf_output: influxdb
+     telegraf_output_influxdb_targets: []
+     telegraf_openstack_scripts_data_format: influx
+
