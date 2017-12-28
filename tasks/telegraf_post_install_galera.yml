@@ -10,4 +10,3 @@
     - telegraf_client-config
   notify:
     - restart telegraf
-
