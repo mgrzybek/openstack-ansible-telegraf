@@ -20,3 +20,7 @@
     baseurl: "{{ influxdata_base_url }}"
   when: ansible_pkg_mgr == 'rpm'
 
+- name: Check if IPMI is available
+  shell: lsmod
+  register: lsmod_result
+  when: ansible_virtualization_role == 'host'

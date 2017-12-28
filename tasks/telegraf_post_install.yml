@@ -38,7 +38,9 @@
     group: "root"
   with_items:
     - { src: "ipmi.conf.j2", dest: "/etc/telegraf/telegraf.d/ipmi.conf" }
-  when: ansible_virtualization_role == 'host'
+  when:
+    - ansible_virtualization_role == 'host'
+    - lsmod_result.stdout.find("ipmi") > -1
   tags:
     - client-config
   notify:
@@ -48,7 +50,7 @@
   file:
     path: /etc/systemd/system/telegraf.service.d
     state: directory
-  when: ansible_virtualization_role == 'host' or inventory_hostname in groups['haproxy']
+  when: ansible_virtualization_role == 'host' and lsmod_result.stdout.find("ipmi") > -1 or inventory_hostname in groups['haproxy']
   tags:
     - client-config
   notify:
@@ -58,7 +60,7 @@
   copy:
     src: user.conf
     dest: /etc/systemd/system/telegraf.service.d/user.conf
-  when: ansible_virtualization_role == 'host' or inventory_hostname in groups['haproxy']
+  when: ansible_virtualization_role == 'host' and lsmod_result.stdout.find("ipmi") > -1 or inventory_hostname in groups['haproxy']
   tags:
     - client-config
   notify:
