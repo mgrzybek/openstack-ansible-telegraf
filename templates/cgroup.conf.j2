@@ -16,11 +16,12 @@
 		"/sys/fs/cgroup/memory/system.slice/keepalived.service/",
 		#"/sys/fs/cgroup/blkio/system.slice/keepalived.service/"
 {% endif %}
-{% if inventory_hostname in groups['compute_hosts'] and nova_virt_type == 'lxd' %}
+{% if inventory_hostname in groups['compute_hosts'] and nova_virt_type | default('kvm') == 'lxd' %}
 		# Compute hosts with LXD
 		"/sys/fs/cgroup/cpuacct/lxc/",
 		"/sys/fs/cgroup/memory/lxc/",
 		#"/sys/fs/cgroup/blkio/lxc/",
+{% endif %}
 {% if inventory_hostname in groups['compute_hosts'] %}
 		# Compute hosts common
 		"/sys/fs/cgroup/cpuacct/neutron.slice/",
