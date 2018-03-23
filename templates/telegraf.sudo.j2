@@ -3,7 +3,9 @@
 {% set run_commands = [] %}
 {% for key, value in telegraf_openstack_scripts.items() %}
 {% 	if value.when_group | bool and (value.group == inventory_hostname or inventory_hostname in value.group | default([])) %}
+{%   if value.sudoers_entry is defined %}
 {% 		set _ = run_commands.extend(value.sudoers_entry) %}
+{% 	 endif %}
 {% 	endif %}
 {% endfor %}
 

@@ -8,6 +8,7 @@
   with_dict: "{{ telegraf_openstack_scripts }}"
   when:
     - item.value.when_group | bool
+    - item.value.plugin_source_path is defined
     - item.value.group == inventory_hostname or inventory_hostname in item.value.group | default([])
   tags:
     - telegraf_client-config
